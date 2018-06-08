@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<scores>
+    <score className="idevcod.AppTest" method="test001" score="1" />
+    <score className="idevcod.AppTest" method="test002" score="1" />
+    <score className="idevcod.AppTest" method="test003" score="1" />
+</scores>

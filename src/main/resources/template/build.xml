@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<project name="junit-test">
+    <property name="src" location="src" />
+    <property name="test" location="test" />
+    <property name="lib" location="lib" />
+    <property name="build" location="build" />
+    <property name="build.classes" location="${build}/classes" />
+	<property name="build.src" location="${build.classes}/src" />
+    <property name="build.test" location="${build.classes}/test" />
+    <property name="build.report" location="${build}/report" />
+   
+    <property name="runTest" value="**/*Test*.class"></property>
+      
+    <!-- 手动指明classpath, 一个path中可以加多个classpath,使用链式编写  -->  
+    <path id="lib_path">  
+        <fileset dir="${lib}" includes="*.jar" />  
+    </path>  
+    <path id="compile_path">  
+        <path refid="lib_path" />  
+        <pathelement location="${build.src}"/>  
+    </path>  
+    <path id="compile_test_path">  
+        <path refid="compile_path" />  
+        <pathelement location="${build.test}"/>  
+    </path>  
+      
+    <target name="clean">
+        <echo>1.开始清理文件</echo>  
+        <delete dir="${build}"></delete>  
+    </target>  
+      
+    <target name="init">
+        <echo>2.项目的初始化</echo>  
+        <mkdir dir="${build}"/>  
+        <mkdir dir="${build.classes}"/>  
+        <mkdir dir="${build.src}"/>  
+		<mkdir dir="${build.test}"/>  
+        <mkdir dir="${build.report}"/>  
+    </target>  
+      
+    <target name="compile_src" depends="init">
+        <echo>3.编译源文件</echo>  
+        <javac srcdir="${src}" destdir="${build.src}" encoding="UTF-8"
+            classpathref="lib_path" includeantruntime="true"/>  
+    </target>  
+      
+    <target name="compile_test" depends="compile_src">
+        <echo>4.编译测试文件</echo>  
+        <javac srcdir="${test}" destdir="${build.test}" encoding="UTF-8"
+            classpathref="compile_path" includeantruntime="true"/>  
+    </target>  
+      
+    <target name="run_test" depends="clean, compile_test">
+        <echo>5.运行单元测试</echo>  
+        <junit printsummary="false" haltonfailure="false">  
+            <classpath refid="compile_test_path"></classpath>   
+            <formatter type="xml"/>  
+            <batchtest todir="${build.report}">  
+                <fileset dir="${build.test}" includes="${runTest}"/>  
+            </batchtest>  
+        </junit>    
+		<!--
+        <junitreport todir="${build.report}">  
+            <fileset dir="${build.report}" includes="TEST-*.xml"/>  
+            <report format="frames" todir="${build.report}/html"/>  
+        </junitreport>  
+		-->
+    </target>  
+    <target name="end" depends="run_test">
+        <echo>6.测试结束</echo>   
+    </target>  
+</project>  

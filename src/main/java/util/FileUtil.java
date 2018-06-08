@@ -33,7 +33,7 @@ public class FileUtil {
 
             File[] subFiles = dir.listFiles();
             if (subFiles == null) {
-                if (!dir.delete()){
+                if (!dir.delete()) {
                     LOGGER.error("delete {} failed", dir.getName());
                     return false;
                 }

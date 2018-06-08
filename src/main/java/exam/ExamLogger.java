@@ -15,11 +15,11 @@ public class ExamLogger extends DefaultLogger {
 
     private PrintStream printStream;
 
-    private ScoreListener listener;
+    private RunTestListener listener;
 
     private String zipFileName;
 
-    public ExamLogger(String fullBuildResultPath, String zipFileName, int msgLevel, ScoreListener listener) throws FileNotFoundException {
+    public ExamLogger(String fullBuildResultPath, String zipFileName, int msgLevel, RunTestListener listener) throws FileNotFoundException {
         printStream = new PrintStream(new FileOutputStream(new File(fullBuildResultPath)), true);
 
         this.listener = listener;
@@ -33,9 +33,9 @@ public class ExamLogger extends DefaultLogger {
     @Override
     public void buildFinished(BuildEvent buildEvent) {
         if (buildEvent.getException() != null) {
-            listener.notifyListener(new ScoreEvent(zipFileName, ScoreEvent.FAILED));
+            listener.notifyListener(new TestEvent(zipFileName, TestEvent.FAILED));
         } else {
-            listener.notifyListener(new ScoreEvent(zipFileName, ScoreEvent.SUCCESS));
+            listener.notifyListener(new TestEvent(zipFileName, TestEvent.SUCCESS));
         }
 
         super.buildFinished(buildEvent);

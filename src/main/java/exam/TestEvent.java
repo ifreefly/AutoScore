@@ -1,17 +1,15 @@
 package exam;
 
-public class ScoreEvent {
+public class TestEvent {
     public static final int SUCCESS = 0;
     public static final int FAILED = -1;
 
     private String zipName;
     private int result;
-    private String description;
 
-    public ScoreEvent(String zipName, int result, String description) {
+    public TestEvent(String zipName, int result) {
         this.zipName = zipName;
         this.result = result;
-        this.description = description;
     }
 
     public String getZipName() {
@@ -20,9 +18,5 @@ public class ScoreEvent {
 
     public int getResult() {
         return result;
-    }
-
-    public String getDescription() {
-        return description;
     }
 }
