@@ -34,8 +34,6 @@ public class AutoExam {
 
     private static final String TXT_POSTFIX = ".txt";
 
-    private static final String LINE_SEPERATOR = System.getProperty("line.separator");
-
     private SummaryCollector collector = new SummaryCollector();
 
     private Map<String, Integer> scoreMap = new HashMap<>();
@@ -241,16 +239,16 @@ public class AutoExam {
 
         }
 
-        File scoreResultFile = new File(buildResultPath + File.separator + event.getZipName() + ".csv");
+        File scoreResultFile = new File(scoreResultPath + File.separator + event.getZipName() + ".csv");
         ScoreSummary summary = scoreExam(event.getZipName(), scoreResultFile, desReport);
         if (summary == null) {
             LOGGER.error("score {} failed, score exam failed", event.getZipName());
             return false;
         }
 
-        File summaryFile = new File(buildResultPath + File.separator + "summary" + ".csv");
+        File summaryFile = new File(summaryDirPath + File.separator + "summary" + ".csv");
         try (FileOutputStream fileOutputStream = new FileOutputStream(summaryFile, true);
-             PrintStream printStream = new PrintStream(fileOutputStream, true)) {
+             PrintStream printStream = new PrintStream(fileOutputStream, true, "UTF-8")) {
             printStream.println(summary.toString());
         } catch (IOException e) {
             LOGGER.info("score {} failed, write summary failed", event.getZipName());
@@ -300,7 +298,8 @@ public class AutoExam {
         SAXReader reader = new SAXReader();
         ScoreSummary scoreSummary = new ScoreSummary(examPaperName);
 
-        try (RandomAccessFile scoreResultFile = new RandomAccessFile(scoreResult, "rw")) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(scoreResult);
+             PrintStream printStream = new PrintStream(fileOutputStream, true, "UTF-8")) {
             Document document = reader.read(desReport);
 
             for (Iterator<Element> testsuitIterator = document.getRootElement().elementIterator("testsuite");
@@ -322,7 +321,7 @@ public class AutoExam {
                     String className = testcase.attributeValue("classname");
                     String name = testcase.attributeValue("name");
 
-                    String status = "unknown";
+                    String status = "success";
                     int caseScore = 0;
                     if (testcase.element("error") != null) {
                         status = "error";
@@ -339,12 +338,9 @@ public class AutoExam {
                         scoreSummary.addScore(caseScore);
                     }
 
-                    scoreResultFile.writeUTF(className + ", " + name + ", " + status + ", " + caseScore + LINE_SEPERATOR);
+                    printStream.println(className + ", " + name + ", " + status + ", " + caseScore);
                 }
             }
-
-            scoreResultFile.seek(0);
-            scoreResultFile.writeUTF(scoreSummary.toString());
         } catch (DocumentException e) {
             LOGGER.error("read {} xml failed", desReport.getName(), e);
             return null;
