@@ -52,9 +52,9 @@ public class AutoExam {
 
     private String summaryDirPath;
 
-    private String reportDirPath;
+    private String caseResultDirPath;
 
-    private String buildResultPath;
+    private String runlog;
 
     private String scoreResultPath;
 
@@ -90,14 +90,15 @@ public class AutoExam {
         String workDir = outPutDir + File.separator + TimeUtil.getTimeStamp(System.currentTimeMillis());
 
         summaryDirPath = workDir + File.separator + "summary";
-        reportDirPath = workDir + File.separator + "report";
-        buildResultPath = workDir + File.separator + "result";
-        scoreResultPath = workDir + File.separator + "score";
 
+        String runDir = workDir + File.separator + "run";
+        runlog = runDir + File.separator + "runlog";
+        caseResultDirPath = runDir + File.separator + "caseResult";
+        scoreResultPath = runDir + File.separator + "score";
 
         createDir(summaryDirPath);
-        createDir(reportDirPath);
-        createDir(buildResultPath);
+        createDir(caseResultDirPath);
+        createDir(runlog);
         createDir(scoreResultPath);
         createDir(tmpPath);
     }
@@ -179,7 +180,7 @@ public class AutoExam {
 
             copyUsecase();
 
-            String fullBuildResultPath = buildResultPath + File.separator + fullFileName.substring(0, fullFileName.length() - 4) + TXT_POSTFIX;
+            String fullBuildResultPath = runlog + File.separator + fullFileName.substring(0, fullFileName.length() - 4) + TXT_POSTFIX;
             antRun(fullBuildResultPath, fullFileName, buildFilePath, TARGET);
         } catch (Exception e) {
             LOGGER.error("score {} failed, error is ", fullFileName, e);
@@ -232,7 +233,7 @@ public class AutoExam {
     }
 
     private boolean analyseResult(TestEvent event) {
-        File desReport = new File(reportDirPath + File.separator + event.getZipName() + ".xml");
+        File desReport = new File(caseResultDirPath + File.separator + event.getZipName() + ".xml");
         if (!collectResult(desReport)) {
             LOGGER.error("score {} failed, copy report file failed", event.getZipName(), event.getResult());
             return false;
