@@ -25,4 +25,13 @@ public class ScoreEvent {
     public String getDescription() {
         return description;
     }
+
+    @Override
+    public String toString() {
+        return "ScoreEvent{" +
+                "zipName='" + zipName + '\'' +
+                ", result=" + result +
+                ", description='" + description + '\'' +
+                '}';
+    }
 }

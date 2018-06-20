@@ -34,7 +34,7 @@ public class AutoExam {
 
     private static final String TXT_POSTFIX = ".txt";
 
-    private SummaryCollector collector = new SummaryCollector();
+    private SummaryCollector collector;
 
     private Map<String, Integer> scoreMap = new HashMap<>();
 
@@ -147,7 +147,9 @@ public class AutoExam {
             throw new IllegalStateException("no exam zip found");
         }
 
-        String buildFilePath = tmpPath + File.separator + " build.xml";
+        collector = new SummaryCollector(summaryDirPath + File.separator + "runSummary.log");
+
+        String buildFilePath = tmpPath + File.separator + "build.xml";
 
         for (File file : files) {
             if (!runTest(buildFilePath, file)) {
@@ -204,13 +206,13 @@ public class AutoExam {
             consoleLogger = new ExamLogger(fullBuildResultPath, fullFileName, Project.MSG_INFO, event -> {
                 if (event.getResult() != TestEvent.SUCCESS) {
                     LOGGER.error("score {} result is {}", event.getZipName(), event.getResult());
-                    collector.collectResult(new ScoreEvent(event.getZipName(), ScoreEvent.FAILED, "runTest not finished"));
+                    collector.collectResult(new ScoreEvent(event.getZipName(), ScoreEvent.FAILED, "runTest failed"));
                 } else {
                     if (!analyseResult(event)) {
                         LOGGER.error("score {} failed, analyseResult failed", event.getZipName());
                         collector.collectResult(new ScoreEvent(event.getZipName(), ScoreEvent.FAILED, "analyse result failed"));
                     } else {
-                        collector.collectResult(new ScoreEvent(event.getZipName(), ScoreEvent.SUCCESS, "analyse result finished"));
+                        collector.collectResult(new ScoreEvent(event.getZipName(), ScoreEvent.SUCCESS, "analyse result success"));
                     }
                 }
             });
@@ -341,6 +343,8 @@ public class AutoExam {
 
                     printStream.println(className + ", " + name + ", " + status + ", " + caseScore);
                 }
+
+                printStream.println(scoreSummary.toString());
             }
         } catch (DocumentException e) {
             LOGGER.error("read {} xml failed", desReport.getName(), e);
