@@ -11,7 +11,6 @@ import java.util.Stack;
 public class FileUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
 
-    // TODO 优化目录的删除，看其他代码是怎么实现的
     public static boolean deleteDir(String dirPath) {
         if (StringUtil.isEmpty(dirPath)) {
             throw new IllegalArgumentException("root is null or empty");
@@ -22,11 +21,15 @@ public class FileUtil {
             throw new UnsupportedOperationException(dirPath + " is not root, it's file!");
         }
 
+        return deleteDir(root);
+    }
+
+    public static boolean deleteDir(File rootDir) {
         Stack<File> dirs = new Stack<>();
         Stack<File> dirsToBeDelete = new Stack<>();
 
-        dirs.push(root);
-        dirsToBeDelete.push(root);
+        dirs.push(rootDir);
+        dirsToBeDelete.push(rootDir);
 
         while (!dirs.isEmpty()) {
             File dir = dirs.pop();
@@ -64,7 +67,7 @@ public class FileUtil {
         return true;
     }
 
-    public static void copyDirectory(String srcDir, String desDir) throws IOException {
+    public static void copyDirectory(String srcDir, final String desDir) throws IOException {
         if (StringUtil.isEmpty(srcDir)) {
             throw new IllegalArgumentException("srcDir is null or empty");
         }
@@ -78,13 +81,18 @@ public class FileUtil {
             throw new IllegalStateException("srcDir " + srcDir + " is not directory!");
         }
 
+        String realDesDir = desDir;
         File desFile = new File(desDir);
-        if (desFile.isFile()) {
-            throw new IllegalStateException("desDir " + desDir + " is not directory");
-        }
+        if (desFile.exists() ) {
+            if (!desFile.isDirectory()) {
+                throw new IllegalStateException("desDir " + desDir + " is not directory");
+            }
 
-        if (!desFile.exists()) {
-            desFile.mkdirs();
+            realDesDir += File.separator + srcFile.getName();
+        } else {
+            if (!desFile.mkdir()) {
+                throw new IllegalStateException("mkdir desDir " + desDir + " failed");
+            }
         }
 
         String srcCanonicalPath = srcFile.getCanonicalPath();
@@ -102,8 +110,8 @@ public class FileUtil {
 
             for (File subFile : subFiles) {
                 String subFileCanonicalPath = subFile.getCanonicalPath();
-                File desSubFile = new File(desDir + subFileCanonicalPath.substring(srcCanonicalPath.length(),
-                        subFileCanonicalPath.length() - 1));
+                File desSubFile = new File(realDesDir + subFileCanonicalPath.substring(srcCanonicalPath.length(),
+                        subFileCanonicalPath.length()));
 
                 if (subFile.isFile()) {
                     Files.copy(subFile.toPath(), desSubFile.toPath());

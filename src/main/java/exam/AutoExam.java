@@ -67,7 +67,7 @@ public class AutoExam {
         this.confPath = workRootDir + File.separator + "conf";
         this.tmpPath = workRootDir + File.separator + "tmp";
         this.templatePath = workRootDir + File.separator + "template";
-        this.useCasePath = workRootDir + File.separator + "usecase";
+        this.useCasePath = workRootDir + File.separator + "usecase" + File.separator + "test";
         this.outPutDir = workRootDir + File.separator + "output";
     }
 
@@ -147,18 +147,20 @@ public class AutoExam {
             throw new IllegalStateException("no exam zip found");
         }
 
-        collector = new SummaryCollector(summaryDirPath + File.separator + "runSummary.log");
+        collector = new SummaryCollector(files.length, summaryDirPath + File.separator + "runSummary.log");
 
         String buildFilePath = tmpPath + File.separator + "build.xml";
 
         for (File file : files) {
-            if (!runTest(buildFilePath, file)) {
-                collector.collectResult(new ScoreEvent(file.getName(), ScoreEvent.FAILED, "RunTestFailed"));
+            if (!score(buildFilePath, file)) {
+                collector.collectResult(new ScoreEvent(file.getName(), ScoreEvent.FAILED, "score failed"));
             }
         }
+
+        collector.close();
     }
 
-    private boolean runTest(String buildFilePath, File file) {
+    private boolean score(String buildFilePath, File file) {
         String fullFileName = file.getName();
 
         if (!FileUtil.deleteDir(tmpPath)) {
@@ -180,6 +182,11 @@ public class AutoExam {
                 return false;
             }
 
+            if (!validateDirAndMkdirIfNeed(tmpPath)) {
+                LOGGER.error("score {} failed, validate dir failed", fullFileName);
+                return false;
+            }
+
             copyUsecase();
 
             String fullBuildResultPath = runlog + File.separator + fullFileName.substring(0, fullFileName.length() - 4) + TXT_POSTFIX;
@@ -190,6 +197,61 @@ public class AutoExam {
         }
 
         return true;
+    }
+
+    private boolean validateDirAndMkdirIfNeed(String codePath) {
+        if (!validateLibPath(codePath)) {
+            return false;
+        }
+
+        if (!validateTestPath(codePath)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean validateTestPath(String codePath) {
+        File testDirectory = new File(codePath + File.separator + "test");
+        if (!testDirectory.exists()) {
+            return true;
+        }
+
+        if (testDirectory.isDirectory()) {
+            if (!FileUtil.deleteDir(testDirectory)) {
+                LOGGER.warn("delete test dir failed");
+                return false;
+            }
+
+            return true;
+        }
+
+        if (!testDirectory.delete()) {
+            LOGGER.warn("delete test file failed");
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean validateLibPath(String codePath) {
+        File libDirectory = new File(codePath + File.separator + "lib");
+        if (libDirectory.isFile()) {
+            LOGGER.warn("lib path is a file");
+            return false;
+        }
+
+        if (libDirectory.exists()) {
+            return true;
+        }
+
+        if (libDirectory.mkdir()) {
+            return true;
+        }
+
+        LOGGER.warn("validateLibPath failed");
+
+        return false;
     }
 
     private void copyUsecase() throws IOException {
@@ -206,7 +268,7 @@ public class AutoExam {
             consoleLogger = new ExamLogger(fullBuildResultPath, fullFileName, Project.MSG_INFO, event -> {
                 if (event.getResult() != TestEvent.SUCCESS) {
                     LOGGER.error("score {} result is {}", event.getZipName(), event.getResult());
-                    collector.collectResult(new ScoreEvent(event.getZipName(), ScoreEvent.FAILED, "runTest failed"));
+                    collector.collectResult(new ScoreEvent(event.getZipName(), ScoreEvent.FAILED, "score failed"));
                 } else {
                     if (!analyseResult(event)) {
                         LOGGER.error("score {} failed, analyseResult failed", event.getZipName());

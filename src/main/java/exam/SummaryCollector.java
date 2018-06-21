@@ -8,11 +8,19 @@ import java.io.*;
 public class SummaryCollector {
     private static final Logger LOGGER = LoggerFactory.getLogger(SummaryCollector.class);
 
+    private int total;
+
+    private int success;
+
+    private int failure;
+
     private FileOutputStream fileOutputStream;
 
     private PrintStream printStream;
 
-    public SummaryCollector(String collectorFilePath) {
+    public SummaryCollector(int totalTask, String collectorFilePath) {
+        this.total = totalTask;
+
         File collectFile = new File(collectorFilePath);
         if (collectFile.isDirectory()) {
             throw new IllegalStateException("collectorFilePath" + collectorFilePath + "is directory");
@@ -31,6 +39,14 @@ public class SummaryCollector {
     }
 
     public void collectResult(ScoreEvent scoreEvent) {
+        if (scoreEvent.getResult() != ScoreEvent.SUCCESS) {
+            failure++;
+        } else {
+            success++;
+        }
+
+        printStream.println("total task=" + total + ", success=" + success + ", failure=" + failure);
+
         printStream.println(scoreEvent.toString());
     }
 
