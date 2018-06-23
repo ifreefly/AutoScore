@@ -1,4 +1,4 @@
-package exam;
+package idevcod.exam;
 
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.DefaultLogger;

@@ -1,4 +1,4 @@
-package exam;
+package idevcod.exam;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -12,9 +12,9 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.FileUtil;
-import util.TimeUtil;
-import util.ZipUtil;
+import idevcod.util.FileUtil;
+import idevcod.util.TimeUtil;
+import idevcod.util.ZipUtil;
 
 import java.io.*;
 import java.nio.file.Files;

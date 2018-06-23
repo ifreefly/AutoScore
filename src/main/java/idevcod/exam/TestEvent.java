@@ -1,4 +1,4 @@
-package exam;
+package idevcod.exam;
 
 public class TestEvent {
     public static final int SUCCESS = 0;

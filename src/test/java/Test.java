@@ -16,6 +16,6 @@ public class Test {
         String subPath = subFile.getCanonicalPath();
         System.out.println(subPath);
 
-        System.out.println(subPath.substring(path.length(), subPath.length() - 1));
+        System.out.println(subPath.substring(path.length(), subPath.length()));
     }
 }

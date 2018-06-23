@@ -1,4 +1,4 @@
-package util;
+package idevcod.util;
 
 public class StringUtil {
     public static boolean isEmpty(String str) {

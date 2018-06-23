@@ -1,4 +1,4 @@
-package util;
+package idevcod.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
