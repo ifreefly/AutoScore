@@ -1,4 +1,4 @@
-package idevcod.exam;
+package idevcod.score;
 
 public class ScoreSummary {
     private String examPaperName;

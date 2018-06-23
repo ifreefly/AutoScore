@@ -1,4 +1,4 @@
-package idevcod.exam;
+package idevcod.score;
 
 public class ScoreEvent {
     public static final int SUCCESS = 0;

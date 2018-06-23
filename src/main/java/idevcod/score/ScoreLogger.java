@@ -1,4 +1,4 @@
-package idevcod.exam;
+package idevcod.score;
 
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.DefaultLogger;
@@ -10,8 +10,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
-public class ExamLogger extends DefaultLogger {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExamLogger.class);
+public class ScoreLogger extends DefaultLogger {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScoreLogger.class);
 
     private PrintStream printStream;
 
@@ -19,7 +19,7 @@ public class ExamLogger extends DefaultLogger {
 
     private String zipFileName;
 
-    public ExamLogger(String fullBuildResultPath, String zipFileName, int msgLevel, RunTestListener listener) throws FileNotFoundException {
+    public ScoreLogger(String fullBuildResultPath, String zipFileName, int msgLevel, RunTestListener listener) throws FileNotFoundException {
         printStream = new PrintStream(new FileOutputStream(new File(fullBuildResultPath)), true);
 
         this.listener = listener;

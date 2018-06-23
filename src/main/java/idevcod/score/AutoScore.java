@@ -1,4 +1,4 @@
-package idevcod.exam;
+package idevcod.score;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class AutoExam {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AutoExam.class);
+public class AutoScore {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AutoScore.class);
 
     private static final String BUILD_FILE = "E:\\tmp\\debug\\mydebug\\build.xml";
 
@@ -58,11 +58,11 @@ public class AutoExam {
 
     private String scoreResultPath;
 
-    public AutoExam() {
+    public AutoScore() {
         this(".");
     }
 
-    public AutoExam(String workRootDir) {
+    public AutoScore(String workRootDir) {
         this.inputDirPath = workRootDir + File.separator + "input";
         this.confPath = workRootDir + File.separator + "conf";
         this.tmpPath = workRootDir + File.separator + "tmp";
@@ -263,9 +263,9 @@ public class AutoExam {
 
         Project project = new Project();
 
-        ExamLogger consoleLogger;
+        ScoreLogger consoleLogger;
         try {
-            consoleLogger = new ExamLogger(fullBuildResultPath, fullFileName, Project.MSG_INFO, event -> {
+            consoleLogger = new ScoreLogger(fullBuildResultPath, fullFileName, Project.MSG_INFO, event -> {
                 if (event.getResult() != TestEvent.SUCCESS) {
                     LOGGER.error("score {} result is {}", event.getZipName(), event.getResult());
                     collector.collectResult(new ScoreEvent(event.getZipName(), ScoreEvent.FAILED, "score failed"));
@@ -440,9 +440,9 @@ public class AutoExam {
 
     public static void main(String[] args) {
         LOGGER.info("run");
-        AutoExam exam = new AutoExam("E:\\tmp\\debug");
+        AutoScore exam = new AutoScore("E:\\tmp\\debug");
         exam.doScoring();
-//        exam.antRun(BUILD_FILE, TARGET);
+//        score.antRun(BUILD_FILE, TARGET);
     }
 }
 
