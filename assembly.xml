@@ -1,0 +1,58 @@
+<assembly>
+    <formats>
+        <format>zip</format>
+    </formats>
+
+    <fileSets>
+        <!-- create empty folder "input" -->
+        <fileSet>
+            <directory>target</directory>
+            <outputDirectory>input</outputDirectory>
+            <excludes>
+                <exclude>**/*</exclude>
+            </excludes>
+        </fileSet>
+
+        <!-- create empty folder "usecase" -->
+        <fileSet>
+            <directory>target</directory>
+            <outputDirectory>usecase</outputDirectory>
+            <excludes>
+                <exclude>**/*</exclude>
+            </excludes>
+        </fileSet>
+
+        <fileSet>
+            <directory>package</directory>
+            <outputDirectory/>
+            <includes>
+                <include>**/conf/**</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>package/bin</directory>
+            <outputDirectory/>
+            <includes>
+                <include>start.bat</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <outputDirectory>conf</outputDirectory>
+            <includes>
+                <include>log4j2.xml</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>target</directory>
+            <outputDirectory>bin</outputDirectory>
+            <includes>
+                <include>**/*.jar</include>
+            </includes>
+        </fileSet>
+
+    </fileSets>
+</assembly>

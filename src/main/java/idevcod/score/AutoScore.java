@@ -17,16 +17,16 @@ import idevcod.util.TimeUtil;
 import idevcod.util.ZipUtil;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 public class AutoScore {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoScore.class);
-
-    private static final String BUILD_FILE = "E:\\tmp\\debug\\mydebug\\build.xml";
 
     private static final String TARGET = "run_test";
 
@@ -66,7 +66,7 @@ public class AutoScore {
         this.inputDirPath = workRootDir + File.separator + "input";
         this.confPath = workRootDir + File.separator + "conf";
         this.tmpPath = workRootDir + File.separator + "tmp";
-        this.templatePath = workRootDir + File.separator + "template";
+        this.templatePath = this.confPath + File.separator + "template";
         this.useCasePath = workRootDir + File.separator + "usecase" + File.separator + "test";
         this.outPutDir = workRootDir + File.separator + "output";
     }
@@ -107,7 +107,7 @@ public class AutoScore {
         String scoreConfigPath = confPath + File.separator + "scoreConfig.xml";
         File file = new File(scoreConfigPath);
         if (!file.exists()) {
-            throw new IllegalStateException("scoreConfig" + scoreConfigPath + "not found");
+            throw new IllegalStateException("scoreConfig" + scoreConfigPath + " not found");
         }
 
         try {
@@ -438,11 +438,32 @@ public class AutoScore {
         return dir.mkdirs();
     }
 
+    private static String getWorkRootDir() {
+        String workRootDir = System.getProperty("workPath");
+        if (workRootDir != null) {
+            return workRootDir;
+        }
+
+//        try {
+//            return new File(AutoScore.class.getProtectionDomain().getCodeSource()
+//                    .getLocation().toURI()).getParentFile().getParentFile().getCanonicalPath();
+//        } catch (URISyntaxException | IOException e) {
+//            LOGGER.error("get work root dir failed.", e);
+//        }
+
+        return "null";
+    }
+
     public static void main(String[] args) {
         LOGGER.info("run");
-        AutoScore exam = new AutoScore("E:\\tmp\\debug");
+        String workRootDir = getWorkRootDir();
+        if (workRootDir == null) {
+            throw new IllegalStateException("workRootDir not found!");
+        }
+
+        LOGGER.info("workRootDir is {}", workRootDir);
+        AutoScore exam = new AutoScore(workRootDir);
         exam.doScoring();
-//        score.antRun(BUILD_FILE, TARGET);
     }
 }
 

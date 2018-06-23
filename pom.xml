@@ -4,14 +4,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>auto-junit</groupId>
-    <artifactId>exam</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+
+        <release.version>0.1</release.version>
     </properties>
+
+    <groupId>auto-junit</groupId>
+    <artifactId>autoScore</artifactId>
+    <version>${release.version}</version>
+
+
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
@@ -48,15 +52,28 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
-            <scope>test</scope>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.ant/ant-junit -->
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant-junit</artifactId>
+            <version>1.10.4</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.ant/ant-junit4 -->
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant-junit4</artifactId>
+            <version>1.10.4</version>
+        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core -->
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-core</artifactId>
             <version>1.3</version>
-            <scope>test</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.dom4j/dom4j -->
@@ -67,4 +84,67 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${project.build.directory}/libs
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/log4j2.xml</exclude>
+                    </excludes>
+                    <archive>
+                        <manifest>
+                            <!--<addClasspath>true</addClasspath>-->
+                            <!--<classpathPrefix>libs/</classpathPrefix>-->
+                            <mainClass>
+                                idevcod.score.AutoScore
+                            </mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-assembly-zip</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${basedir}/assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
 </project>
