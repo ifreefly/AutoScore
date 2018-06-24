@@ -107,25 +107,6 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>**/log4j2.xml</exclude>
-                    </excludes>
-                    <archive>
-                        <manifest>
-                            <!--<addClasspath>true</addClasspath>-->
-                            <!--<classpathPrefix>libs/</classpathPrefix>-->
-                            <mainClass>
-                                idevcod.score.AutoScore
-                            </mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>

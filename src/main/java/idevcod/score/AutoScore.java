@@ -1,5 +1,8 @@
 package idevcod.score;
 
+import idevcod.util.FileUtil;
+import idevcod.util.TimeUtil;
+import idevcod.util.ZipUtil;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
@@ -12,15 +15,11 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import idevcod.util.FileUtil;
-import idevcod.util.TimeUtil;
-import idevcod.util.ZipUtil;
 
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -444,12 +443,12 @@ public class AutoScore {
             return workRootDir;
         }
 
-//        try {
-//            return new File(AutoScore.class.getProtectionDomain().getCodeSource()
-//                    .getLocation().toURI()).getParentFile().getParentFile().getCanonicalPath();
-//        } catch (URISyntaxException | IOException e) {
-//            LOGGER.error("get work root dir failed.", e);
-//        }
+        try {
+            return new File(AutoScore.class.getProtectionDomain().getCodeSource()
+                    .getLocation().toURI()).getParentFile().getParentFile().getCanonicalPath();
+        } catch (URISyntaxException | IOException e) {
+            LOGGER.error("get work root dir failed.", e);
+        }
 
         return "null";
     }

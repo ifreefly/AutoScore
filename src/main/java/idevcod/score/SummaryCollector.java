@@ -45,7 +45,9 @@ public class SummaryCollector {
             success++;
         }
 
-        printStream.println("total task=" + total + ", success=" + success + ", failure=" + failure);
+        int finished = failure + success;
+
+        printStream.println("finished/total=" + finished + "/" + total + ", success=" + success + ", failure=" + failure);
 
         printStream.println(scoreEvent.toString());
     }
