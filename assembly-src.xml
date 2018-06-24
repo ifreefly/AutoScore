@@ -12,6 +12,7 @@
                 <include>pom.xml</include>
                 <include>assembly-src.xml</include>
                 <include>assembly.xml</include>
+                <include>ReadMe.md</include>
                 <include>UserGuide.md</include>
             </includes>
         </fileSet>

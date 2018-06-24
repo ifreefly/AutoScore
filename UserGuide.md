@@ -102,13 +102,13 @@ output下的目录是以时间命名的，进入后，目录结构如下
         runlog 原始的ant运行结果
     </li>
     <li>
-        score 考生的得分情况
+        score 考生的得分详细情况，通过解析caseResult中的文件得到
     </li>
     <li>
         runSummary.log 总体阅卷情况，包含阅卷成功与失败，含阅卷进度打印
     </li>
     <li>
-        summary.csv 得分情况汇总
+        summary.csv 得分情况汇总，所有得分结果看此文件即可
     </li>
 </ul>
 
