@@ -1,0 +1,18 @@
+<assembly>
+    <formats>
+        <format>zip</format>
+    </formats>
+
+    <fileSets>
+        <fileSet>
+            <directory>./</directory>
+            <includes>
+                <include>**/src/**</include>
+                <include>pom.xml</include>
+                <include>assembly-src.xml</include>
+                <include>assembly.xml</include>
+                <include>UserGuide.md</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>

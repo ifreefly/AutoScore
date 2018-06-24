@@ -38,6 +38,15 @@
             </includes>
         </fileSet>
 
+        <!-- copy src zip -->
+        <fileSet>
+            <directory>target</directory>
+            <outputDirectory/>
+            <includes>
+                <include>autoScore-source-${release.version}.zip</include>
+            </includes>
+        </fileSet>
+
         <fileSet>
             <directory>src/main/resources</directory>
             <outputDirectory>conf</outputDirectory>

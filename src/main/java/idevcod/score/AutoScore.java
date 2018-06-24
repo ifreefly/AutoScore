@@ -57,10 +57,6 @@ public class AutoScore {
 
     private String scoreResultPath;
 
-    public AutoScore() {
-        this(".");
-    }
-
     public AutoScore(String workRootDir) {
         this.inputDirPath = workRootDir + File.separator + "input";
         this.confPath = workRootDir + File.separator + "conf";
@@ -70,23 +66,22 @@ public class AutoScore {
         this.outPutDir = workRootDir + File.separator + "output";
     }
 
-    public void doScoring() {
+    private void doScoring() throws IOException {
         validateProject();
         prepareDir();
         loadScoreConfig();
         scoreAll();
     }
 
-    private void validateProject() {
+    private void validateProject() throws IOException {
         validateInput();
         validateTest();
     }
 
-    private void validateInput() {
+    private void validateInput() throws IOException {
         File inputDirFile = new File(inputDirPath);
-        if (!inputDirFile.exists()) {
-            inputDirFile.mkdirs();
-            throw new IllegalStateException("input dir not found and system create it!");
+        if (!inputDirFile.exists() && !inputDirFile.mkdirs()){
+            throw new IllegalStateException("input dir not found and system create failed!");
         }
 
         if (!inputDirFile.isDirectory()) {
@@ -95,7 +90,7 @@ public class AutoScore {
 
         File[] files = inputDirFile.listFiles();
         if (files == null || files.length == 0) {
-            throw new IllegalStateException("no exam zip found in " + inputDirPath);
+            throw new IllegalStateException("no exam zip found in " + inputDirFile.getCanonicalPath());
         }
     }
 
@@ -160,7 +155,7 @@ public class AutoScore {
         return className + "#" + name;
     }
 
-    public void scoreAll() {
+    private void scoreAll() {
         File[] files = new File(inputDirPath).listFiles();
 
         collector = new SummaryCollector(files.length, summaryDirPath + File.separator + "runSummary.log");

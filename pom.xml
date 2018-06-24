@@ -16,7 +16,6 @@
     <version>${release.version}</version>
 
 
-
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
         <dependency>
@@ -109,6 +108,21 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>zip-src</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+
+                        <configuration>
+                            <finalName>autoScore-source-${release.version}</finalName>
+                            <descriptors>
+                                <descriptor>${basedir}/assembly-src.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+
                     <execution>
                         <id>make-assembly-zip</id>
                         <phase>package</phase>
