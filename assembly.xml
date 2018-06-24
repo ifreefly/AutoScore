@@ -4,21 +4,22 @@
     </formats>
 
     <fileSets>
-        <!-- create empty folder "input" -->
         <fileSet>
-            <directory>target</directory>
+            <directory>package/demo</directory>
             <outputDirectory>input</outputDirectory>
-            <excludes>
-                <exclude>**/*</exclude>
-            </excludes>
+            <includes>
+                <include>**.zip</include>
+            </includes>
         </fileSet>
 
-        <!-- create empty folder "usecase" -->
         <fileSet>
-            <directory>target</directory>
+            <directory>package/demo</directory>
             <outputDirectory>usecase</outputDirectory>
+            <includes>
+                <include>**/test/**</include>
+            </includes>
             <excludes>
-                <exclude>**/*</exclude>
+                <exclude>**/demo/*.zip</exclude>
             </excludes>
         </fileSet>
 
