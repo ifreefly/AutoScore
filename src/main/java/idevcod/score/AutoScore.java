@@ -71,12 +71,42 @@ public class AutoScore {
     }
 
     public void doScoring() {
-        prepare();
+        validateProject();
+        prepareDir();
         loadScoreConfig();
         scoreAll();
     }
 
-    public void prepare() {
+    private void validateProject() {
+        validateInput();
+        validateTest();
+    }
+
+    private void validateInput() {
+        File inputDirFile = new File(inputDirPath);
+        if (!inputDirFile.exists()) {
+            inputDirFile.mkdirs();
+            throw new IllegalStateException("input dir not found and system create it!");
+        }
+
+        if (!inputDirFile.isDirectory()) {
+            throw new IllegalStateException("input dir not exist and it's a file!");
+        }
+
+        File[] files = inputDirFile.listFiles();
+        if (files == null || files.length == 0) {
+            throw new IllegalStateException("no exam zip found in " + inputDirPath);
+        }
+    }
+
+    private void validateTest() {
+        File testDirFile = new File(useCasePath);
+        if (!testDirFile.isDirectory()) {
+            throw new IllegalStateException("useCasePath " + useCasePath + " not found!");
+        }
+    }
+
+    public void prepareDir() {
         File workFile = new File(outPutDir);
         if (workFile.isFile()) {
             throw new IllegalStateException(outPutDir + " is a file!");
@@ -131,20 +161,7 @@ public class AutoScore {
     }
 
     public void scoreAll() {
-        File inputFileDir = new File(inputDirPath);
-        if (!inputFileDir.exists()) {
-            inputFileDir.mkdirs();
-            throw new IllegalStateException("input dir not found and system create it!");
-        }
-
-        if (!inputFileDir.isDirectory()) {
-            throw new IllegalStateException("input dir not exist and it's a file!");
-        }
-
-        File[] files = inputFileDir.listFiles();
-        if (files == null || files.length == 0) {
-            throw new IllegalStateException("no exam zip found");
-        }
+        File[] files = new File(inputDirPath).listFiles();
 
         collector = new SummaryCollector(files.length, summaryDirPath + File.separator + "runSummary.log");
 
@@ -454,15 +471,19 @@ public class AutoScore {
     }
 
     public static void main(String[] args) {
-        LOGGER.info("run");
-        String workRootDir = getWorkRootDir();
-        if (workRootDir == null) {
-            throw new IllegalStateException("workRootDir not found!");
-        }
+        try {
+            LOGGER.info("run");
+            String workRootDir = getWorkRootDir();
+            if (workRootDir == null) {
+                throw new IllegalStateException("workRootDir not found!");
+            }
 
-        LOGGER.info("workRootDir is {}", workRootDir);
-        AutoScore exam = new AutoScore(workRootDir);
-        exam.doScoring();
+            LOGGER.info("workRootDir is {}", workRootDir);
+            AutoScore exam = new AutoScore(workRootDir);
+            exam.doScoring();
+        } catch (Throwable t) {
+            LOGGER.error("score failed, throwable is ", t);
+        }
     }
 }
 
