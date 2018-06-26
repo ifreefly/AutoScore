@@ -11,3 +11,7 @@ windows 7/10 ，JDK 8
 ```
 mvn clean install
 ```
+
+# 其他
+1. 项目运行需要使用JDK tools.jar，项目已经预先打包
+2. 编译如果存在问题，请修改pom文件中对tools.jar的相关依赖
