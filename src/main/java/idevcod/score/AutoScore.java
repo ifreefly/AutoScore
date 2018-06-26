@@ -417,8 +417,9 @@ public class AutoScore {
                     printStream.println(className + ", " + name + ", " + status + ", " + caseScore);
                 }
 
-                printStream.println(scoreSummary.toString());
             }
+
+            printStream.println(scoreSummary.toString());
         } catch (DocumentException e) {
             LOGGER.error("read {} xml failed", desReport.getName(), e);
             return null;
