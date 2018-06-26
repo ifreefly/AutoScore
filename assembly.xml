@@ -57,6 +57,14 @@
         </fileSet>
 
         <fileSet>
+            <directory>./</directory>
+            <outputDirectory/>
+            <includes>
+                <include>UserGuide.md</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
             <directory>target</directory>
             <outputDirectory>bin</outputDirectory>
             <includes>
