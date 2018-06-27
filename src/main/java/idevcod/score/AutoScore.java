@@ -33,6 +33,8 @@ public class AutoScore {
 
     private static final String TXT_POSTFIX = ".txt";
 
+    public static final String ENCODING = "UTF-8";
+
     private SummaryCollector collector;
 
     private Map<String, Integer> scoreMap = new HashMap<>();
@@ -324,7 +326,7 @@ public class AutoScore {
 
         File summaryFile = new File(summaryDirPath + File.separator + "summary" + ".csv");
         try (FileOutputStream fileOutputStream = new FileOutputStream(summaryFile, true);
-             PrintStream printStream = new PrintStream(fileOutputStream, true, "UTF-8")) {
+             PrintStream printStream = new PrintStream(fileOutputStream, true, ENCODING)) {
             printStream.println(summary.toString());
         } catch (IOException e) {
             LOGGER.info("score {} failed, write summary failed", event.getZipName());
@@ -344,12 +346,12 @@ public class AutoScore {
             return false;
         }
 
-        OutputFormat format = OutputFormat.createPrettyPrint();
         Document desDocument = DocumentHelper.createDocument();
         Element root = desDocument.addElement("testsuites");
 
         for (File file : files) {
             SAXReader reader = new SAXReader();
+            reader.setEncoding(ENCODING);
             try {
                 Document document = reader.read(file);
                 root.add(document.getRootElement());
@@ -359,7 +361,9 @@ public class AutoScore {
             }
         }
 
-        try (FileWriter fileWriter = new FileWriter(desReport)) {
+        OutputFormat format = OutputFormat.createPrettyPrint();
+        format.setEncoding(ENCODING);
+        try (FileOutputStream fileWriter = new FileOutputStream(desReport)) {
             XMLWriter xmlWriter = new XMLWriter(fileWriter, format);
             xmlWriter.write(desDocument);
             xmlWriter.close();
@@ -372,10 +376,12 @@ public class AutoScore {
 
     private ScoreSummary scoreExam(String examPaperName, File scoreResult, File desReport) {
         SAXReader reader = new SAXReader();
+        reader.setEncoding(ENCODING);
+
         ScoreSummary scoreSummary = new ScoreSummary(examPaperName);
 
         try (FileOutputStream fileOutputStream = new FileOutputStream(scoreResult);
-             PrintStream printStream = new PrintStream(fileOutputStream, true, "UTF-8")) {
+             PrintStream printStream = new PrintStream(fileOutputStream, true, ENCODING)) {
             Document document = reader.read(desReport);
 
             for (Iterator<Element> testsuitIterator = document.getRootElement().elementIterator("testsuite");
