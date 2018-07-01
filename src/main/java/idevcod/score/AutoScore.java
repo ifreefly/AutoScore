@@ -24,9 +24,7 @@ import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 public class AutoScore {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoScore.class);
@@ -43,46 +41,19 @@ public class AutoScore {
 
     private SummaryCollector collector;
 
-    private Map<String, Integer> scoreMap = new HashMap<>();
-
     private WorkPath workPath;
+
+    private ScoreConfig scoreConfig;
 
     public AutoScore(String workRootDir) {
         workPath = new WorkPath(workRootDir);
+        scoreConfig = new ScoreConfig(workPath.getConfPath());
     }
 
     private void doScoring() throws IOException {
         workPath.prepareDir();
-        loadScoreConfig(workPath.getConfPath());
+        scoreConfig.loadScoreConfig();
         scoreAll(workPath.getInputDirPath(), workPath.getSummaryDirPath(), workPath.getTmpPath());
-    }
-
-    private void loadScoreConfig(String confPath) {
-        String scoreConfigPath = confPath + File.separator + "scoreConfig.xml";
-        File file = new File(scoreConfigPath);
-        if (!file.exists()) {
-            throw new IllegalStateException("scoreConfig" + scoreConfigPath + " not found");
-        }
-
-        try {
-            SAXReader reader = new SAXReader();
-            Document document = reader.read(file);
-            Element root = document.getRootElement();
-
-            for (Iterator<Element> iterator = root.elementIterator("score"); iterator.hasNext(); ) {
-                Element element = iterator.next();
-                Score score = new Score(element.attributeValue("className"), element.attributeValue("method"),
-                        Integer.valueOf(element.attributeValue("score")));
-                scoreMap.put(key(score.getClassName(), score.getName()), score.getScore());
-            }
-        } catch (DocumentException e) {
-            LOGGER.error("parse scoreConfig {} failed", scoreConfigPath, e);
-            throw new IllegalStateException("parse scoreConfig " + scoreConfigPath + "failed");
-        }
-    }
-
-    private String key(String className, String name) {
-        return className + "#" + name;
     }
 
     private void scoreAll(String inputDirPath, String summaryDirPath, String tmpPath) {
@@ -371,14 +342,7 @@ public class AutoScore {
                     } else if (testcase.element("failure") != null) {
                         status = "failure";
                     } else {
-                        String key = key(className, name);
-                        if (!scoreMap.containsKey(key)) {
-                            LOGGER.error("score failed, test case {} not found score", key);
-                            throw new IllegalStateException("score failed, test case " + key + " not found score");
-                        }
-
-                        caseScore = scoreMap.get(key(className, name));
-                        scoreSummary.addScore(caseScore);
+                        scoreSummary.addScore(scoreConfig.getScore(className, name));
                     }
 
                     printStream.println(className + ", " + name + ", " + status + ", " + caseScore);
