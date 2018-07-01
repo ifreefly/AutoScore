@@ -122,4 +122,22 @@ public class FileUtil {
             }
         }
     }
+
+    /**
+     * @param des 目标文件
+     * @return 如果目标文件不是目录，或者创建目录失败，返回false
+     */
+    public static boolean createDirectoryIfNotExist(String des) {
+        File desFile = new File(des);
+        if (!desFile.exists()) {
+            return desFile.mkdirs();
+        }
+
+        if (desFile.isFile()) {
+            LOGGER.error("create des directory failed, des file exist.");
+            return false;
+        }
+
+        return true;
+    }
 }

@@ -33,14 +33,14 @@ public class ZipUtil {
             }
         }
 
-        if (createDirectoryIfNotExist(zipDes)) {
+        if (!createDirectoryIfNotExist(zipDes)) {
             return false;
         }
 
         return unzip(srcFile, zipDes);
     }
 
-    public static boolean unzip(File srcFile, String zipDes) {
+    private static boolean unzip(File srcFile, String zipDes) {
         try (FileInputStream fileInputStream = new FileInputStream(srcFile);
              ZipInputStream zipInputStream = new ZipInputStream(fileInputStream)) {
             while (true) {

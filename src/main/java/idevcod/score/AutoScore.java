@@ -1,6 +1,7 @@
 package idevcod.score;
 
 import idevcod.util.FileUtil;
+import idevcod.util.RarUtil;
 import idevcod.util.TimeUtil;
 import idevcod.util.ZipUtil;
 import org.apache.tools.ant.BuildException;
@@ -30,6 +31,8 @@ public class AutoScore {
     private static final String TARGET = "run_test";
 
     private static final String ZIP_POSTFIX = ".zip";
+
+    private static final String RAR_POSTFIX = ".rar";
 
     private static final String TXT_POSTFIX = ".txt";
 
@@ -173,7 +176,7 @@ public class AutoScore {
         collector.close();
     }
 
-    private boolean score(String buildFilePath, File file) {
+    private boolean score(String templateBuildFilePath, File file) {
         String fullFileName = file.getName();
 
         if (!FileUtil.deleteDir(tmpPath)) {
@@ -184,14 +187,13 @@ public class AutoScore {
         createDir(tmpPath);
 
         try {
-            if (!fullFileName.endsWith(ZIP_POSTFIX)) {
-                LOGGER.error("score {} failed, postfix is not zip", fullFileName);
+            if (!extractFile(file)) {
+                LOGGER.error("score {} failed, extract exam failed.", fullFileName);
                 return false;
             }
 
-            ZipUtil.unzip(file, tmpPath);
-            if (!copyBuildFile(buildFilePath)) {
-                LOGGER.error("score {} failed, copyBuildFile failed", fullFileName);
+            if (!copyTemplateBuildFile(templateBuildFilePath)) {
+                LOGGER.error("score {} failed, copyTemplateBuildFile failed", fullFileName);
                 return false;
             }
 
@@ -203,11 +205,26 @@ public class AutoScore {
             copyUsecase();
 
             String fullBuildResultPath = runlog + File.separator + fullFileName.substring(0, fullFileName.length() - 4) + TXT_POSTFIX;
-            antRun(fullBuildResultPath, fullFileName, buildFilePath, TARGET);
+            antRun(fullBuildResultPath, fullFileName, templateBuildFilePath, TARGET);
         } catch (Exception e) {
             LOGGER.error("score {} failed, error is ", fullFileName, e);
             return false;
         }
+
+        return true;
+    }
+
+    private boolean extractFile(File file) throws IOException {
+        String fullFileName = file.getName();
+        if (fullFileName.endsWith(ZIP_POSTFIX)) {
+            return ZipUtil.unzip(file.getCanonicalPath(), tmpPath);
+        }
+
+        if (fullFileName.endsWith(RAR_POSTFIX)) {
+            return RarUtil.unrarFile(file.getCanonicalPath(), tmpPath);
+        }
+
+        LOGGER.error("score {} failed, postfix is not zip or rar!", fullFileName);
 
         return true;
     }
@@ -446,7 +463,7 @@ public class AutoScore {
         return scoreSummary;
     }
 
-    private boolean copyBuildFile(String buildFilePath) {
+    private boolean copyTemplateBuildFile(String buildFilePath) {
         File srcBuildFile = new File(templatePath + File.separator + "build.xml");
         File desBuildFile = new File(buildFilePath);
 
@@ -484,11 +501,12 @@ public class AutoScore {
     public static void main(String[] args) {
         try {
             LOGGER.info("run");
-            String workRootDir = getWorkRootDir();
-            if (workRootDir == null) {
-                throw new IllegalStateException("workRootDir not found!");
-            }
+//            String workRootDir = getWorkRootDir();
+//            if (workRootDir == null) {
+//                throw new IllegalStateException("workRootDir not found!");
+//            }
 
+            String workRootDir = "E:\\tmp\\debug1";
             LOGGER.info("workRootDir is {}", workRootDir);
             AutoScore exam = new AutoScore(workRootDir);
             exam.doScoring();
