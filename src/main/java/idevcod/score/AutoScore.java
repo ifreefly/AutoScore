@@ -327,6 +327,8 @@ public class AutoScore {
         File summaryFile = new File(summaryDirPath + File.separator + "summary" + ".csv");
         try (FileOutputStream fileOutputStream = new FileOutputStream(summaryFile, true);
              PrintStream printStream = new PrintStream(fileOutputStream, true, ENCODING)) {
+            writeBom(printStream);
+
             printStream.println(summary.toString());
         } catch (IOException e) {
             LOGGER.info("score {} failed, write summary failed", event.getZipName());
@@ -337,6 +339,13 @@ public class AutoScore {
 
         return true;
     }
+
+    /**解决excel csv乱码的问题*/
+    private void writeBom(PrintStream printStream) throws IOException {
+        byte[] uft8bom={(byte)0xef,(byte)0xbb,(byte)0xbf};
+        printStream.write(uft8bom);
+    }
+
 
     private boolean collectResult(File desReport) {
         File srcResultDirs = new File(tmpPath + File.separator + "build" + File.separator + "report");
