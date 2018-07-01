@@ -33,7 +33,7 @@ public class ZipUtil {
             }
         }
 
-        if (!createDirectoryIfNotExist(zipDes)) {
+        if (!FileUtil.createDirectoryIfNotExist(zipDes)) {
             return false;
         }
 
@@ -76,19 +76,5 @@ public class ZipUtil {
                 bos.write(bytes, 0, read);
             }
         }
-    }
-
-    private static boolean createDirectoryIfNotExist(String zipDesc) {
-        File desFile = new File(zipDesc);
-        if (!desFile.exists()) {
-            return desFile.mkdirs();
-        }
-
-        if (desFile.isFile()) {
-            LOGGER.error("create des directory failed, des file exist.");
-            return false;
-        }
-
-        return true;
     }
 }
