@@ -1,8 +1,5 @@
 package idevcod.score;
 
-import idevcod.util.FileUtil;
-import idevcod.util.RarUtil;
-import idevcod.util.ZipUtil;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
@@ -22,20 +19,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
 
 public class AutoScore {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoScore.class);
 
     private static final String TARGET = "run_test";
-
-    private static final String ZIP_POSTFIX = ".zip";
-
-    private static final String RAR_POSTFIX = ".rar";
-
-    private static final String TXT_POSTFIX = ".txt";
 
     private static final String ENCODING = "UTF-8";
 
@@ -51,20 +40,21 @@ public class AutoScore {
     }
 
     private void doScoring() throws IOException {
-        workPath.prepareDir();
         scoreConfig.loadScoreConfig();
-        scoreAll(workPath.getInputDirPath(), workPath.getSummaryDirPath(), workPath.getTmpPath());
+        workPath.prepareDir();
+        scoreAll(workPath.getInputDirPath());
     }
 
-    private void scoreAll(String inputDirPath, String summaryDirPath, String tmpPath) {
+    private void scoreAll(String inputDirPath) {
         File[] files = new File(inputDirPath).listFiles();
+        if (files == null) {
+            throw new IllegalStateException("get exam paper failed!");
+        }
 
-        collector = new SummaryCollector(files.length, summaryDirPath + File.separator + "runSummary.log");
-
-        String desBuildFilePath = tmpPath + File.separator + "build.xml";
+        collector = new SummaryCollector(files.length, workPath.getSummaryLogPath());
 
         for (File file : files) {
-            if (!score(workPath.getTmpPath(), desBuildFilePath, file)) {
+            if (!score(file)) {
                 collector.collectResult(new ScoreEvent(file.getName(), ScoreEvent.FAILED, "score failed"));
             }
         }
@@ -72,33 +62,15 @@ public class AutoScore {
         collector.close();
     }
 
-    private boolean score(String tmpPath, String desTemplateBuildFilePath, File file) {
+    private boolean score(File file) {
         String fullFileName = file.getName();
 
-        if (!prepareTmpDir(workPath.getTmpPath())) {
-            return false;
-        }
-
         try {
-            if (!extractFile(file, workPath.getTmpPath())) {
-                LOGGER.error("score {} failed, extract exam failed.", fullFileName);
+            if (!workPath.prepareTmpWorkDir(file)) {
                 return false;
             }
 
-            if (!copyTemplateBuildFile(workPath.getTemplatePath(), desTemplateBuildFilePath)) {
-                LOGGER.error("score {} failed, copyTemplateBuildFile failed", fullFileName);
-                return false;
-            }
-
-            if (!validateDirAndMkdirIfNeed(tmpPath)) {
-                LOGGER.error("score {} failed, validate dir failed", fullFileName);
-                return false;
-            }
-
-            copyUsecase(workPath.getUseCasePath(), workPath.getTmpPath());
-
-            String fullBuildResultPath = workPath.getRunlogPath() + File.separator + fullFileName.substring(0, fullFileName.length() - 4) + TXT_POSTFIX;
-            antRun(fullBuildResultPath, fullFileName, desTemplateBuildFilePath, TARGET);
+            antRun(workPath.getBuildResultPath(fullFileName), fullFileName, workPath.getWorkBuildFilePath(), TARGET);
         } catch (Exception e) {
             LOGGER.error("score {} failed, error is ", fullFileName, e);
             return false;
@@ -107,95 +79,8 @@ public class AutoScore {
         return true;
     }
 
-    private boolean prepareTmpDir(String tmpPath) {
-        if (!FileUtil.deleteDir(tmpPath)) {
-            LOGGER.error("score {} failed, delete tmp path failed", tmpPath);
-            return false;
-        }
 
-        if (!createDir(tmpPath)) {
-            LOGGER.error("score {} failed, create tmp path failed", tmpPath);
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean extractFile(File file, String desPath) throws IOException {
-        String fullFileName = file.getName();
-        if (fullFileName.endsWith(ZIP_POSTFIX)) {
-            return ZipUtil.unzip(file.getCanonicalPath(), desPath);
-        }
-
-        if (fullFileName.endsWith(RAR_POSTFIX)) {
-            return RarUtil.unrarFile(file.getCanonicalPath(), desPath);
-        }
-
-        LOGGER.error("score {} failed, postfix is not zip or rar!", fullFileName);
-
-        return true;
-    }
-
-    private boolean validateDirAndMkdirIfNeed(String codePath) {
-        if (!validateLibPath(codePath)) {
-            return false;
-        }
-
-        if (!validateTestPath(codePath)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean validateTestPath(String codePath) {
-        File testDirectory = new File(codePath + File.separator + "test");
-        if (!testDirectory.exists()) {
-            return true;
-        }
-
-        if (testDirectory.isDirectory()) {
-            if (!FileUtil.deleteDir(testDirectory)) {
-                LOGGER.warn("delete test dir failed");
-                return false;
-            }
-
-            return true;
-        }
-
-        if (!testDirectory.delete()) {
-            LOGGER.warn("delete test file failed");
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean validateLibPath(String codePath) {
-        File libDirectory = new File(codePath + File.separator + "lib");
-        if (libDirectory.isFile()) {
-            LOGGER.warn("lib path is a file");
-            return false;
-        }
-
-        if (libDirectory.exists()) {
-            return true;
-        }
-
-        if (libDirectory.mkdir()) {
-            return true;
-        }
-
-        LOGGER.warn("validateLibPath failed");
-
-        return false;
-    }
-
-    private void copyUsecase(String useCasePath, String tmpPath) throws IOException {
-        FileUtil.copyDirectory(useCasePath, tmpPath);
-    }
-
-    public void antRun(String fullBuildResultPath, String fullFileName, String buildFilePath, String target) {
+    private void antRun(String fullBuildResultPath, String fullFileName, String buildFilePath, String target) {
         File buildFile = new File(buildFilePath);
 
         Project project = new Project();
@@ -204,14 +89,14 @@ public class AutoScore {
         try {
             consoleLogger = new ScoreLogger(fullBuildResultPath, fullFileName, Project.MSG_INFO, event -> {
                 if (event.getResult() != TestEvent.SUCCESS) {
-                    LOGGER.error("score {} result is {}", event.getZipName(), event.getResult());
-                    collector.collectResult(new ScoreEvent(event.getZipName(), ScoreEvent.FAILED, "score failed"));
+                    LOGGER.error("score {} result is {}", event.getFileName(), event.getResult());
+                    collector.collectResult(new ScoreEvent(event.getFileName(), ScoreEvent.FAILED, "score failed"));
                 } else {
-                    if (!analyseResult(event, workPath.getCaseResultDirPath(), workPath.getScoreResultPath(), workPath.getSummaryDirPath(), workPath.getTmpPath())) {
-                        LOGGER.error("score {} failed, analyseResult failed", event.getZipName());
-                        collector.collectResult(new ScoreEvent(event.getZipName(), ScoreEvent.FAILED, "analyse result failed"));
+                    if (!analyseResult(event, workPath)) {
+                        LOGGER.error("score {} failed, analyseResult failed", event.getFileName());
+                        collector.collectResult(new ScoreEvent(event.getFileName(), ScoreEvent.FAILED, "analyse result failed"));
                     } else {
-                        collector.collectResult(new ScoreEvent(event.getZipName(), ScoreEvent.SUCCESS, "analyse result success"));
+                        collector.collectResult(new ScoreEvent(event.getFileName(), ScoreEvent.SUCCESS, "analyse result success"));
                     }
                 }
             });
@@ -233,39 +118,41 @@ public class AutoScore {
         }
     }
 
-    private boolean analyseResult(TestEvent event, String caseResultDirPath, String scoreResultPath, String summaryDirPath, String tmpPath) {
-        File desReport = new File(caseResultDirPath + File.separator + event.getZipName() + ".xml");
-        if (!collectResult(desReport, tmpPath)) {
-            LOGGER.error("score {} failed, copy report file failed", event.getZipName(), event.getResult());
+    private boolean analyseResult(TestEvent event, WorkPath workPath) {
+        File desReport = new File(workPath.getReportPath(event.getFileName()));
+        if (!collectResult(desReport, workPath.getTmpPath())) {
+            LOGGER.error("score {} failed, copy report file failed", event.getFileName(), event.getResult());
             return false;
         }
 
-        File scoreResultFile = new File(scoreResultPath + File.separator + event.getZipName() + ".csv");
-        ScoreSummary summary = scoreExam(event.getZipName(), scoreResultFile, desReport);
+        File scoreResultFile = new File(workPath.getScoreResultPath(event.getFileName()));
+        ScoreSummary summary = scoreExam(event.getFileName(), scoreResultFile, desReport);
         if (summary == null) {
-            LOGGER.error("score {} failed, score exam failed", event.getZipName());
+            LOGGER.error("score {} failed, score exam failed", event.getFileName());
             return false;
         }
 
-        File summaryFile = new File(summaryDirPath + File.separator + "summary" + ".csv");
+        File summaryFile = new File(workPath.getSummaryResultPath());
         try (FileOutputStream fileOutputStream = new FileOutputStream(summaryFile, true);
              PrintStream printStream = new PrintStream(fileOutputStream, true, ENCODING)) {
             writeBom(printStream);
 
             printStream.println(summary.toString());
         } catch (IOException e) {
-            LOGGER.info("score {} failed, write summary failed", event.getZipName());
+            LOGGER.info("score {} failed, write summary failed", event.getFileName());
             return false;
         }
 
-        LOGGER.info("score {} success", event.getZipName());
+        LOGGER.info("score {} success", event.getFileName());
 
         return true;
     }
 
-    /**解决excel csv乱码的问题*/
+    /**
+     * 解决excel csv乱码的问题
+     */
     private void writeBom(PrintStream printStream) throws IOException {
-        byte[] uft8bom={(byte)0xef,(byte)0xbb,(byte)0xbf};
+        byte[] uft8bom = {(byte) 0xef, (byte) 0xbb, (byte) 0xbf};
         printStream.write(uft8bom);
     }
 
@@ -362,19 +249,6 @@ public class AutoScore {
         return scoreSummary;
     }
 
-    private boolean copyTemplateBuildFile(String templatePath, String buildFilePath) {
-        File srcBuildFile = new File(templatePath + File.separator + "build.xml");
-        File desBuildFile = new File(buildFilePath);
-
-        try {
-            Files.copy(srcBuildFile.toPath(), desBuildFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            LOGGER.warn("copy build File failed.", e);
-            return false;
-        }
-
-        return true;
-    }
 
     private static String getWorkRootDir() {
         String workRootDir = System.getProperty("workPath");
@@ -392,20 +266,14 @@ public class AutoScore {
         return "null";
     }
 
-    private boolean createDir(String dirPath) {
-        File dir = new File(dirPath);
-        return dir.mkdirs();
-    }
-
     public static void main(String[] args) {
         try {
             LOGGER.info("run");
-//            String workRootDir = getWorkRootDir();
-//            if (workRootDir == null) {
-//                throw new IllegalStateException("workRootDir not found!");
-//            }
+            String workRootDir = getWorkRootDir();
+            if (workRootDir == null) {
+                throw new IllegalStateException("workRootDir not found!");
+            }
 
-            String workRootDir = "E:\\tmp\\debug1";
             LOGGER.info("workRootDir is {}", workRootDir);
             AutoScore exam = new AutoScore(workRootDir);
             exam.doScoring();

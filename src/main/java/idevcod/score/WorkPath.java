@@ -5,37 +5,33 @@ import idevcod.util.TimeUtil;
 import java.io.File;
 import java.io.IOException;
 
-public class WorkPath {
+class WorkPath {
+
     private String inputDirPath;
 
     private String confPath;
 
-    private String tmpPath;
+    private TmpWorkPath tmpWorkPath;
 
-    private String templatePath;
+    private String templateBuildFilePath;
 
     private String useCasePath;
 
     private String outPutDir;
 
-    private String summaryDirPath;
+    private OutputPath outputPath;
 
-    private String caseResultDirPath;
-
-    private String runlogPath;
-
-    private String scoreResultPath;
-
-    public WorkPath(String workRootDir) {
+    WorkPath(String workRootDir) {
         this.inputDirPath = workRootDir + File.separator + "input";
         this.confPath = workRootDir + File.separator + "conf";
-        this.tmpPath = workRootDir + File.separator + "tmp";
-        this.templatePath = this.confPath + File.separator + "template";
+        this.templateBuildFilePath = this.confPath + File.separator + "template" + File.separator + "build.xml";
         this.useCasePath = workRootDir + File.separator + "usecase" + File.separator + "test";
         this.outPutDir = workRootDir + File.separator + "output";
+
+        tmpWorkPath = new TmpWorkPath(workRootDir + File.separator + "tmp");
     }
 
-    public void prepareDir() throws IOException {
+    void prepareDir() throws IOException {
         validateProject();
         createDir();
     }
@@ -78,64 +74,56 @@ public class WorkPath {
             workFile.mkdirs();
         }
 
-        String workDir = outPutDir + File.separator + TimeUtil.getTimeStamp(System.currentTimeMillis());
+        outputPath = new OutputPath(outPutDir + File.separator + TimeUtil.getTimeStamp(System.currentTimeMillis()));
 
-        summaryDirPath = workDir + File.separator + "summary";
-
-        String runDir = workDir + File.separator + "run";
-        runlogPath = runDir + File.separator + "runlog";
-        caseResultDirPath = runDir + File.separator + "caseResult";
-        scoreResultPath = runDir + File.separator + "score";
-
-        createDir(summaryDirPath);
-        createDir(caseResultDirPath);
-        createDir(runlogPath);
-        createDir(scoreResultPath);
-        createDir(tmpPath);
+        outputPath.createOutputStruct();
     }
 
-    private boolean createDir(String dirPath) {
-        File dir = new File(dirPath);
-        return dir.mkdirs();
+    boolean prepareTmpWorkDir(File examFile) throws IOException {
+        return tmpWorkPath.prepareTmpWorkDir(this, examFile);
     }
 
-    public String getInputDirPath() {
+    String getWorkBuildFilePath() {
+        return tmpWorkPath.getBuildFilePath();
+    }
+
+    String getInputDirPath() {
         return inputDirPath;
     }
 
-    public String getConfPath() {
+    String getConfPath() {
         return confPath;
     }
 
-    public String getTmpPath() {
-        return tmpPath;
+    String getTemplateBuildFilePath() {
+        return templateBuildFilePath;
     }
 
-    public String getTemplatePath() {
-        return templatePath;
+    String getTmpPath() {
+        return tmpWorkPath.getTmpWorkPath();
     }
 
-    public String getUseCasePath() {
+    String getBuildResultPath(String fileName) {
+       return outputPath.getBuildResultPath(fileName);
+    }
+
+    String getSummaryLogPath() {
+        return outputPath.getSummaryLogPath();
+    }
+
+    String getReportPath(String fileName) {
+        return outputPath.getReportPath(fileName);
+    }
+
+    String getScoreResultPath(String fileName) {
+        return outputPath.getScoreResultPath(fileName);
+    }
+
+    String getSummaryResultPath() {
+        return outputPath.getSummaryResultPath();
+    }
+
+    String getUseCasePath() {
         return useCasePath;
-    }
-
-    public String getOutPutDir() {
-        return outPutDir;
-    }
-
-    public String getSummaryDirPath() {
-        return summaryDirPath;
-    }
-
-    public String getCaseResultDirPath() {
-        return caseResultDirPath;
-    }
-
-    public String getRunlogPath() {
-        return runlogPath;
-    }
-
-    public String getScoreResultPath() {
-        return scoreResultPath;
     }
 }
