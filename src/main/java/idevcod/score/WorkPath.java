@@ -111,7 +111,7 @@ class WorkPath {
         return outputPath.getSummaryLogPath();
     }
 
-    String getReportPath(String fileName) {
+    String getReportFilePath(String fileName) {
         return outputPath.getReportPath(fileName);
     }
 

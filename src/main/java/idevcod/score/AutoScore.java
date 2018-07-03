@@ -54,7 +54,7 @@ public class AutoScore {
         collector = new SummaryCollector(files.length, workPath.getSummaryLogPath());
 
         for (File file : files) {
-            if (!score(file)) {
+            if (!score(file)) { // 打分后还有结果分析，需要结果分析成功后，才能算真正的success，因此此处只收集打分失败的结果。
                 collector.collectResult(new ScoreEvent(file.getName(), ScoreEvent.FAILED, "score failed"));
             }
         }
@@ -62,17 +62,18 @@ public class AutoScore {
         collector.close();
     }
 
-    private boolean score(File file) {
-        String fullFileName = file.getName();
+    private boolean score(File examFile) {
+        String paperName = examFile.getName();
 
         try {
-            if (!workPath.prepareTmpWorkDir(file)) {
+            if (!workPath.prepareTmpWorkDir(examFile)) {
+                LOGGER.error("score {} failed", paperName);
                 return false;
             }
 
-            antRun(workPath.getBuildResultPath(fullFileName), fullFileName, workPath.getWorkBuildFilePath(), TARGET);
+            antRun(workPath.getBuildResultPath(paperName), paperName, workPath.getWorkBuildFilePath(), TARGET);
         } catch (Exception e) {
-            LOGGER.error("score {} failed, error is ", fullFileName, e);
+            LOGGER.error("score {} failed, error is ", paperName, e);
             return false;
         }
 
@@ -80,14 +81,14 @@ public class AutoScore {
     }
 
 
-    private void antRun(String fullBuildResultPath, String fullFileName, String buildFilePath, String target) {
+    private void antRun(String fullBuildResultPath, String paperName, String buildFilePath, String target) {
         File buildFile = new File(buildFilePath);
 
         Project project = new Project();
 
         ScoreLogger consoleLogger;
         try {
-            consoleLogger = new ScoreLogger(fullBuildResultPath, fullFileName, Project.MSG_INFO, event -> {
+            consoleLogger = new ScoreLogger(fullBuildResultPath, paperName, Project.MSG_INFO, event -> {
                 if (event.getResult() != TestEvent.SUCCESS) {
                     LOGGER.error("score {} result is {}", event.getFileName(), event.getResult());
                     collector.collectResult(new ScoreEvent(event.getFileName(), ScoreEvent.FAILED, "score failed"));
@@ -96,12 +97,13 @@ public class AutoScore {
                         LOGGER.error("score {} failed, analyseResult failed", event.getFileName());
                         collector.collectResult(new ScoreEvent(event.getFileName(), ScoreEvent.FAILED, "analyse result failed"));
                     } else {
+                        LOGGER.info("score {} success", event.getFileName());
                         collector.collectResult(new ScoreEvent(event.getFileName(), ScoreEvent.SUCCESS, "analyse result success"));
                     }
                 }
             });
         } catch (FileNotFoundException e) {
-            LOGGER.error("score {} failed, create buildListener failed.", fullFileName, e);
+            LOGGER.error("score {} failed, create buildListener failed.", paperName, e);
             return;
         }
 
@@ -118,17 +120,17 @@ public class AutoScore {
         }
     }
 
+
     private boolean analyseResult(TestEvent event, WorkPath workPath) {
-        File desReport = new File(workPath.getReportPath(event.getFileName()));
+        File desReport = new File(workPath.getReportFilePath(event.getFileName()));
         if (!collectResult(desReport, workPath.getTmpPath())) {
-            LOGGER.error("score {} failed, copy report file failed", event.getFileName(), event.getResult());
+            LOGGER.error("copy {} report file failed", event.getFileName());
             return false;
         }
 
-        File scoreResultFile = new File(workPath.getScoreResultPath(event.getFileName()));
-        ScoreSummary summary = scoreExam(event.getFileName(), scoreResultFile, desReport);
+        ScoreSummary summary = scoreExam(event.getFileName(), workPath.getScoreResultPath(event.getFileName()), desReport);
         if (summary == null) {
-            LOGGER.error("score {} failed, score exam failed", event.getFileName());
+            LOGGER.error("score {} failed", event.getFileName());
             return false;
         }
 
@@ -139,11 +141,9 @@ public class AutoScore {
 
             printStream.println(summary.toString());
         } catch (IOException e) {
-            LOGGER.info("score {} failed, write summary failed", event.getFileName());
+            LOGGER.info("write {} summary failed, exception is ", event.getFileName(), e);
             return false;
         }
-
-        LOGGER.info("score {} success", event.getFileName());
 
         return true;
     }
@@ -193,14 +193,18 @@ public class AutoScore {
         return true;
     }
 
-    private ScoreSummary scoreExam(String examPaperName, File scoreResult, File desReport) {
+
+    private ScoreSummary scoreExam(String examPaperName, String scoreResultPath, File desReport) {
         SAXReader reader = new SAXReader();
         reader.setEncoding(ENCODING);
 
         ScoreSummary scoreSummary = new ScoreSummary(examPaperName);
 
+        File scoreResult = new File(scoreResultPath);
         try (FileOutputStream fileOutputStream = new FileOutputStream(scoreResult);
              PrintStream printStream = new PrintStream(fileOutputStream, true, ENCODING)) {
+            writeBom(printStream);
+
             Document document = reader.read(desReport);
 
             for (Iterator<Element> testsuitIterator = document.getRootElement().elementIterator("testsuite");
@@ -248,7 +252,6 @@ public class AutoScore {
 
         return scoreSummary;
     }
-
 
     private static String getWorkRootDir() {
         String workRootDir = System.getProperty("workPath");

@@ -1,8 +1,8 @@
 package idevcod.score;
 
 public class TestEvent {
-    public static final int SUCCESS = 0;
-    public static final int FAILED = -1;
+    static final int SUCCESS = 0;
+    static final int FAILED = -1;
 
     private String fileName;
     private int result;
@@ -12,11 +12,11 @@ public class TestEvent {
         this.result = result;
     }
 
-    public String getFileName() {
+    String getFileName() {
         return fileName;
     }
 
-    public int getResult() {
+    int getResult() {
         return result;
     }
 }

@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-public class TmpWorkPath {
+class TmpWorkPath {
     private static final Logger LOGGER = LoggerFactory.getLogger(TmpWorkPath.class);
 
     private static final String ZIP_POSTFIX = ".zip";
@@ -35,29 +35,27 @@ public class TmpWorkPath {
     }
 
     boolean prepareTmpWorkDir(WorkPath workPath, File examFile) throws IOException {
-        String examPaperName = examFile.getName();
-
         if (!cleanTmpWorkDir()) {
             return false;
         }
 
         if (!extractFile(examFile, workPath.getTmpPath())) {
-            LOGGER.error("score {} failed, extract exam failed.", examPaperName);
+            LOGGER.error("extract exam failed.");
             return false;
         }
 
         if (!clearExamTest()) {
-            LOGGER.error("score {} failed, clear exam test dir failed", examPaperName);
+            LOGGER.error("clear exam test dir failed");
             return false;
         }
 
         if (!copyTemplateBuildFile(workPath.getTemplateBuildFilePath())) {
-            LOGGER.error("score {} failed, copyTemplateBuildFile failed", examPaperName);
+            LOGGER.error("copyTemplateBuildFile failed");
             return false;
         }
 
         if (!validateLibPath()) {
-            LOGGER.error("score {} failed, validate lib path failed failed", examPaperName);
+            LOGGER.error("validate lib path failed failed");
             return false;
         }
 
@@ -73,12 +71,12 @@ public class TmpWorkPath {
         }
 
         if (!FileUtil.deleteDir(tmpWorkFile)) {
-            LOGGER.error("score {} failed, delete tmp path failed", tmpWorkPath);
+            LOGGER.error("delete tmp path failed");
             return false;
         }
 
         if (!createDir(tmpWorkPath)) {
-            LOGGER.error("score {} failed, create tmp path failed", tmpWorkPath);
+            LOGGER.error("create tmp path failed");
             return false;
         }
 
@@ -95,8 +93,6 @@ public class TmpWorkPath {
             return RarUtil.unrarFile(file.getCanonicalPath(), desPath);
         }
 
-        LOGGER.error("score {} failed, postfix is not zip or rar!", fullFileName);
-
         return true;
     }
 
@@ -107,7 +103,7 @@ public class TmpWorkPath {
         try {
             Files.copy(srcBuildFile.toPath(), desBuildFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            LOGGER.warn("copy build File failed.", e);
+            LOGGER.warn("copy build File {} failed.", srcBuildFile, e);
             return false;
         }
 
@@ -166,7 +162,7 @@ public class TmpWorkPath {
         return dir.mkdirs();
     }
 
-    public String getTmpWorkPath() {
+    String getTmpWorkPath() {
         return tmpWorkPath;
     }
 

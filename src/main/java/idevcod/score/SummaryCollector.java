@@ -3,7 +3,11 @@ package idevcod.score;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 
 public class SummaryCollector {
     private static final Logger LOGGER = LoggerFactory.getLogger(SummaryCollector.class);
