@@ -89,7 +89,8 @@ output下的目录是以时间命名的，进入后，目录结构如下
 │  ├─caseResult
 │  ├─runlog
 │  └─score
-└─summary
+└─result
+    ├─detail.csv
     ├─runSummary.log
     └─summary.csv
 </pre>
@@ -103,6 +104,9 @@ output下的目录是以时间命名的，进入后，目录结构如下
     </li>
     <li>
         score 考生的得分详细情况，通过解析caseResult中的文件得到
+    </li>
+    <li>
+        detail.csv 阅卷详细情况，包含所有考生的用例得分，是上述score得分情况的另一种报表形式
     </li>
     <li>
         runSummary.log 总体阅卷情况，包含阅卷成功与失败，含阅卷进度打印
