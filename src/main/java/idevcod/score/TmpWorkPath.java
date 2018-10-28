@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.LinkedList;
+import java.util.Queue;
 
 class TmpWorkPath {
     private static final Logger LOGGER = LoggerFactory.getLogger(TmpWorkPath.class);
@@ -22,6 +24,8 @@ class TmpWorkPath {
 
     private String libPath;
 
+    private String srcPath;
+
     private String testPath;
 
     private String buildFilePath;
@@ -29,6 +33,7 @@ class TmpWorkPath {
     TmpWorkPath(String tmpWorkPath) {
         this.tmpWorkPath = tmpWorkPath;
         this.libPath = tmpWorkPath + File.separator + "lib";
+        this.srcPath = tmpWorkPath + File.separator + "src";
         this.testPath = tmpWorkPath + File.separator + "test";
 
         this.buildFilePath = this.tmpWorkPath + File.separator + "build.xml";
@@ -54,6 +59,11 @@ class TmpWorkPath {
             return false;
         }
 
+        if (!validateSrcPath()) {
+            LOGGER.error("validate src path failed");
+            return false;
+        }
+
         if (!validateLibPath()) {
             LOGGER.error("validate lib path failed failed");
             return false;
@@ -62,6 +72,54 @@ class TmpWorkPath {
         copyUsecase(workPath.getUseCasePath(), workPath.getTmpPath());
 
         return true;
+    }
+
+    private boolean validateSrcPath() throws IOException {
+        File srcDirectory = new File(srcPath);
+        if (srcDirectory.isDirectory()) {
+            return true;
+        }
+
+        if (srcDirectory.exists()) {
+            LOGGER.warn("srcFile exist, but was not directory!");
+            return false;
+        }
+
+        if (!findSpecificDirAndCopy("src")) {
+            LOGGER.warn("find src dir and copy failed");
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean findSpecificDirAndCopy(String specificDirName) throws IOException {
+        File rootDirectory = new File(tmpWorkPath);
+        Queue<File> queue = new LinkedList<>();
+
+        queue.offer(rootDirectory);
+        for (File dir = queue.poll(); dir != null; dir = queue.poll()) {
+            File[] files = dir.listFiles();
+            if (files == null) {
+                return false;
+            }
+
+            for(File file : files) {
+                if (!file.isDirectory()) {
+                    continue;
+                }
+
+                if (!specificDirName.equals(file.getName())) {
+                    queue.offer(file);
+                    continue;
+                }
+
+                FileUtil.copyDirectory(file.getCanonicalPath(), tmpWorkPath);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean cleanTmpWorkDir() {
@@ -137,14 +195,18 @@ class TmpWorkPath {
         return true;
     }
 
-    private boolean validateLibPath() {
+    private boolean validateLibPath() throws IOException {
         File libDirectory = new File(libPath);
-        if (libDirectory.isFile()) {
-            LOGGER.warn("lib path is a file");
-            return false;
+        if (libDirectory.isDirectory()) {
+            return true;
         }
 
         if (libDirectory.exists()) {
+            LOGGER.warn("libFile exist, but was not directory!");
+            return false;
+        }
+
+        if (findSpecificDirAndCopy("lib")) {
             return true;
         }
 
