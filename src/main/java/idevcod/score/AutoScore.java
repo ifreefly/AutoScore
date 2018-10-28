@@ -28,7 +28,9 @@ public class AutoScore {
 
     private static final String ENCODING = "UTF-8";
 
-    private SummaryCollector collector;
+    private SummaryCollector summaryCollector;
+
+    private DetailCollector detailCollector;
 
     private WorkPath workPath;
 
@@ -51,15 +53,17 @@ public class AutoScore {
             throw new IllegalStateException("get exam paper failed!");
         }
 
-        collector = new SummaryCollector(files.length, workPath.getSummaryLogPath());
+        summaryCollector = new SummaryCollector(files.length, workPath.getSummaryLogPath());
+        detailCollector = new DetailCollector(workPath.getDetailResultPath(), scoreConfig);
 
         for (File file : files) {
             if (!score(file)) { // 打分后还有结果分析，需要结果分析成功后，才能算真正的success，因此此处只收集打分失败的结果。
-                collector.collectResult(new ScoreEvent(file.getName(), ScoreEvent.FAILED, "score failed"));
+                summaryCollector.collectResult(new ScoreEvent(file.getName(), ScoreEvent.FAILED, "score failed"));
             }
         }
 
-        collector.close();
+        summaryCollector.close();
+        detailCollector.close();
     }
 
     private boolean score(File examFile) {
@@ -91,14 +95,14 @@ public class AutoScore {
             consoleLogger = new ScoreLogger(fullBuildResultPath, paperName, Project.MSG_INFO, event -> {
                 if (event.getResult() != TestEvent.SUCCESS) {
                     LOGGER.error("score {} result is {}", event.getFileName(), event.getResult());
-                    collector.collectResult(new ScoreEvent(event.getFileName(), ScoreEvent.FAILED, "score failed"));
+                    summaryCollector.collectResult(new ScoreEvent(event.getFileName(), ScoreEvent.FAILED, "score failed"));
                 } else {
                     if (!analyseResult(event, workPath)) {
                         LOGGER.error("score {} failed, analyseResult failed", event.getFileName());
-                        collector.collectResult(new ScoreEvent(event.getFileName(), ScoreEvent.FAILED, "analyse result failed"));
+                        summaryCollector.collectResult(new ScoreEvent(event.getFileName(), ScoreEvent.FAILED, "analyse result failed"));
                     } else {
                         LOGGER.info("score {} success", event.getFileName());
-                        collector.collectResult(new ScoreEvent(event.getFileName(), ScoreEvent.SUCCESS, "analyse result success"));
+                        summaryCollector.collectResult(new ScoreEvent(event.getFileName(), ScoreEvent.SUCCESS, "analyse result success"));
                     }
                 }
             });
@@ -128,8 +132,8 @@ public class AutoScore {
             return false;
         }
 
-        ScoreSummary summary = scoreExam(event.getFileName(), workPath.getScoreResultPath(event.getFileName()), desReport);
-        if (summary == null) {
+        ScoreResult scoreResult = scoreExam(event.getFileName(), workPath.getScoreResultPath(event.getFileName()), desReport);
+        if (scoreResult == null) {
             LOGGER.error("score {} failed", event.getFileName());
             return false;
         }
@@ -139,7 +143,9 @@ public class AutoScore {
              PrintStream printStream = new PrintStream(fileOutputStream, true, ENCODING)) {
             writeBom(printStream);
 
-            printStream.println(summary.toString());
+            printStream.println(scoreResult.getScoreSummary().toString());
+
+            detailCollector.collectResult(scoreResult.getScoreDetail());
         } catch (IOException e) {
             LOGGER.info("write {} summary failed, exception is ", event.getFileName(), e);
             return false;
@@ -194,16 +200,20 @@ public class AutoScore {
     }
 
 
-    private ScoreSummary scoreExam(String examPaperName, String scoreResultPath, File desReport) {
+    private ScoreResult scoreExam(String examPaperName, String scoreResultPath, File desReport) {
         SAXReader reader = new SAXReader();
         reader.setEncoding(ENCODING);
 
         ScoreSummary scoreSummary = new ScoreSummary(examPaperName);
+        ScoreDetail scoreDetail = new ScoreDetail(examPaperName);
+        ScoreResult scoreResult = new ScoreResult(scoreSummary, scoreDetail);
 
-        File scoreResult = new File(scoreResultPath);
-        try (FileOutputStream fileOutputStream = new FileOutputStream(scoreResult);
+        File scoreResultFile = new File(scoreResultPath);
+        try (FileOutputStream fileOutputStream = new FileOutputStream(scoreResultFile);
              PrintStream printStream = new PrintStream(fileOutputStream, true, ENCODING)) {
             writeBom(printStream);
+
+            int score = 0;
 
             Document document = reader.read(desReport);
 
@@ -233,24 +243,29 @@ public class AutoScore {
                     } else if (testcase.element("failure") != null) {
                         status = "failure";
                     } else {
-                        scoreSummary.addScore(scoreConfig.getScore(className, name));
+                        caseScore = scoreConfig.getScore(className, name);
                     }
+
+                    score += caseScore;
+                    scoreDetail.addScoreItem(className, name, caseScore);
 
                     printStream.println(className + ", " + name + ", " + status + ", " + caseScore);
                 }
-
             }
+
+            scoreSummary.setScore(score);
+            scoreDetail.setScore(score);
 
             printStream.println(scoreSummary.toString());
         } catch (DocumentException e) {
             LOGGER.error("read {} xml failed", desReport.getName(), e);
             return null;
         } catch (IOException e) {
-            LOGGER.error("score {} failed", scoreResult.getName(), e);
+            LOGGER.error("score {} failed", scoreResultFile.getName(), e);
             return null;
         }
 
-        return scoreSummary;
+        return scoreResult;
     }
 
     private static String getWorkRootDir() {

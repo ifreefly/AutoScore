@@ -9,7 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
-public class SummaryCollector {
+public class SummaryCollector implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(SummaryCollector.class);
 
     private int total;
@@ -56,6 +56,7 @@ public class SummaryCollector {
         printStream.println(scoreEvent.toString());
     }
 
+    @Override
     public void close() {
         closeQuietly(printStream);
         closeQuietly(fileOutputStream);

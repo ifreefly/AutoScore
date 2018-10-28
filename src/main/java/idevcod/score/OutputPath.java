@@ -8,7 +8,7 @@ public class OutputPath {
 
     private String outputDir;
 
-    private String summaryDirPath;
+    private String resultPath;
 
     private String caseResultDirPath;
 
@@ -18,7 +18,7 @@ public class OutputPath {
 
     public OutputPath(String outputDir) {
         this.outputDir = outputDir;
-        summaryDirPath = outputDir + File.separator + "summary";
+        resultPath = outputDir + File.separator + "result";
 
         String runDir = outputDir + File.separator + "run";
         runlogPath = runDir + File.separator + "runlog";
@@ -26,8 +26,8 @@ public class OutputPath {
         scoreResultPath = runDir + File.separator + "score";
     }
 
-    void createOutputStruct() {
-        createDir(summaryDirPath);
+    void createOutputStructure() {
+        createDir(resultPath);
         createDir(caseResultDirPath);
         createDir(runlogPath);
         createDir(scoreResultPath);
@@ -43,7 +43,7 @@ public class OutputPath {
     }
 
     String getSummaryLogPath() {
-        return summaryDirPath + File.separator + "runSummary.log";
+        return resultPath + File.separator + "runSummary.log";
     }
 
     String getReportPath(String fileName) {
@@ -55,6 +55,10 @@ public class OutputPath {
     }
 
     String getSummaryResultPath() {
-        return summaryDirPath + File.separator + "summary" + ".csv";
+        return resultPath + File.separator + "summary.csv";
+    }
+
+    public String getDetailResultPath() {
+        return resultPath + File.separator + "detail.csv";
     }
 }

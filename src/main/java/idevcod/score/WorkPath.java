@@ -76,7 +76,7 @@ class WorkPath {
 
         outputPath = new OutputPath(outPutDir + File.separator + TimeUtil.getTimeStamp(System.currentTimeMillis()));
 
-        outputPath.createOutputStruct();
+        outputPath.createOutputStructure();
     }
 
     boolean prepareTmpWorkDir(File examFile) throws IOException {
@@ -121,6 +121,10 @@ class WorkPath {
 
     String getSummaryResultPath() {
         return outputPath.getSummaryResultPath();
+    }
+
+    String getDetailResultPath() {
+        return outputPath.getDetailResultPath();
     }
 
     String getUseCasePath() {

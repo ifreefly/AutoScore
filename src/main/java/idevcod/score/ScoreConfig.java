@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -59,5 +60,9 @@ public class ScoreConfig {
 
     private String key(String className, String name) {
         return className + "#" + name;
+    }
+
+    public Map<String, Integer> getScoreMap() {
+        return Collections.unmodifiableMap(scoreMap);
     }
 }
