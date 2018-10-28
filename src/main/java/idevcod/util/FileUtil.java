@@ -83,16 +83,17 @@ public class FileUtil {
 
         String realDesDir = desDir;
         File desFile = new File(desDir);
-        if (desFile.exists() ) {
+        if (desFile.exists()) {
             if (!desFile.isDirectory()) {
                 throw new IllegalStateException("desDir " + desDir + " is not directory");
             }
 
             realDesDir += File.separator + srcFile.getName();
-        } else {
-            if (!desFile.mkdir()) {
-                throw new IllegalStateException("mkdir desDir " + desDir + " failed");
-            }
+        }
+
+        File realDesFile = new File(realDesDir);
+        if (!realDesFile.mkdir()) {
+            throw new IllegalStateException("mkdir desDir " + desDir + " failed");
         }
 
         String srcCanonicalPath = srcFile.getCanonicalPath();
@@ -110,8 +111,7 @@ public class FileUtil {
 
             for (File subFile : subFiles) {
                 String subFileCanonicalPath = subFile.getCanonicalPath();
-                File desSubFile = new File(realDesDir + subFileCanonicalPath.substring(srcCanonicalPath.length(),
-                        subFileCanonicalPath.length()));
+                File desSubFile = new File(realDesDir + subFileCanonicalPath.substring(srcCanonicalPath.length()));
 
                 if (subFile.isFile()) {
                     Files.copy(subFile.toPath(), desSubFile.toPath());
