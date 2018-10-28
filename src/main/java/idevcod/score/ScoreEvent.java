@@ -1,8 +1,8 @@
 package idevcod.score;
 
 public class ScoreEvent {
-    public static final int SUCCESS = 0;
-    public static final int FAILED = -1;
+    static final int SUCCESS = 0;
+    static final int FAILED = -1;
 
     private String fileName;
     private int result;
@@ -14,16 +14,8 @@ public class ScoreEvent {
         this.description = description;
     }
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    public int getResult() {
+    int getResult() {
         return result;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     @Override

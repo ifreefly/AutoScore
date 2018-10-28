@@ -13,18 +13,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class ScoreConfig {
+class ScoreConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScoreConfig.class);
 
     private String confPath;
 
     private Map<String, Integer> scoreMap = new HashMap<>();
 
-    public ScoreConfig(String confPath) {
+    ScoreConfig(String confPath) {
         this.confPath = confPath;
     }
 
-    public void loadScoreConfig() {
+    void loadScoreConfig() {
         String scoreConfigPath = confPath + File.separator + "scoreConfig.xml";
         File file = new File(scoreConfigPath);
         if (!file.exists()) {
@@ -48,7 +48,7 @@ public class ScoreConfig {
         }
     }
 
-    public int getScore(String className, String methodName) {
+    int getScore(String className, String methodName) {
         String key = key(className, methodName);
         if (!scoreMap.containsKey(key)) {
             LOGGER.error("score failed, test case {} not found score", key);
@@ -62,7 +62,7 @@ public class ScoreConfig {
         return className + "#" + name;
     }
 
-    public Map<String, Integer> getScoreMap() {
+    Map<String, Integer> getScoreMap() {
         return Collections.unmodifiableMap(scoreMap);
     }
 }

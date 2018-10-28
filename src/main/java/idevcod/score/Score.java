@@ -13,11 +13,11 @@ public class Score {
         this.score = score;
     }
 
-    public String getClassName() {
+    String getClassName() {
         return className;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 

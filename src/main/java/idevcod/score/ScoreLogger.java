@@ -2,8 +2,6 @@ package idevcod.score;
 
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.DefaultLogger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,8 +9,6 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 public class ScoreLogger extends DefaultLogger {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScoreLogger.class);
-
     private PrintStream printStream;
 
     private RunTestListener listener;

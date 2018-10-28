@@ -10,16 +10,12 @@ public class ScoreDetail {
 
     private Map<String, Integer> scoreMap = new HashMap<>();
 
-    public ScoreDetail(String examPaperName) {
+    ScoreDetail(String examPaperName) {
         this.examPaperName = examPaperName;
     }
 
-    public String getExamPaperName() {
+    String getExamPaperName() {
         return examPaperName;
-    }
-
-    public void setExamPaperName(String examPaperName) {
-        this.examPaperName = examPaperName;
     }
 
     public int getScore() {
@@ -30,11 +26,11 @@ public class ScoreDetail {
         this.score = score;
     }
 
-    public Map<String, Integer> getScoreMap() {
+    Map<String, Integer> getScoreMap() {
         return scoreMap;
     }
 
-    public void addScoreItem(String className, String name, int score) {
+    void addScoreItem(String className, String name, int score) {
         scoreMap.put(key(className, name), score);
     }
 

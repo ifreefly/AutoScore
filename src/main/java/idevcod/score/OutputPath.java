@@ -2,11 +2,9 @@ package idevcod.score;
 
 import java.io.File;
 
-public class OutputPath {
+class OutputPath {
 
     private static final String TXT_POSTFIX = ".txt";
-
-    private String outputDir;
 
     private String resultPath;
 
@@ -16,8 +14,7 @@ public class OutputPath {
 
     private String scoreResultPath;
 
-    public OutputPath(String outputDir) {
-        this.outputDir = outputDir;
+    OutputPath(String outputDir) {
         resultPath = outputDir + File.separator + "result";
 
         String runDir = outputDir + File.separator + "run";
@@ -58,7 +55,7 @@ public class OutputPath {
         return resultPath + File.separator + "summary.csv";
     }
 
-    public String getDetailResultPath() {
+    String getDetailResultPath() {
         return resultPath + File.separator + "detail.csv";
     }
 }

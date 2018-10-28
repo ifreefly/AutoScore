@@ -42,7 +42,7 @@ public class SummaryCollector implements AutoCloseable {
         }
     }
 
-    public void collectResult(ScoreEvent scoreEvent) {
+    void collectResult(ScoreEvent scoreEvent) {
         if (scoreEvent.getResult() != ScoreEvent.SUCCESS) {
             failure++;
         } else {
